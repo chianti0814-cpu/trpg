@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>荊棘與誓約 — 宮廷篇</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: #0a0608;
+  color: #e8d8b8;
+  font-family: Georgia, 'Times New Roman', 'Noto Serif TC', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+.petal { position:fixed; pointer-events:none; z-index:1; font-size:10px; opacity:0; color:rgba(180,60,80,0.5); animation:petalFall linear infinite; }
+@keyframes petalFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:0} 5%{opacity:0.5} 95%{opacity:0.2} 100%{transform:translateY(105vh) rotate(720deg) translateX(var(--drift,30px));opacity:0} }
+#app { position:relative; z-index:2; min-height:100vh; }
+
+/* TITLE */
+#title-screen { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px; text-align:center; background:radial-gradient(ellipse at 50% 30%,rgba(139,20,34,0.12) 0%,transparent 60%); }
+.crown-svg { width:64px; margin-bottom:18px; filter:drop-shadow(0 0 14px rgba(196,136,42,0.7)); animation:glow 3s ease-in-out infinite; }
+@keyframes glow { 0%,100%{filter:drop-shadow(0 0 8px rgba(196,136,42,0.4))} 50%{filter:drop-shadow(0 0 24px rgba(196,136,42,0.9))} }
+.t-en { font-size:0.7rem; letter-spacing:0.5em; color:#c4882a; margin-bottom:10px; text-transform:uppercase; }
+.t-zh { font-size:clamp(1.8rem,6vw,3rem); color:#f5d080; text-shadow:0 0 40px rgba(196,136,42,0.4),2px 2px 4px rgba(0,0,0,0.9); margin-bottom:6px; font-weight:bold; }
+.t-sub { font-size:0.8rem; letter-spacing:0.3em; color:#a07840; margin-bottom:32px; }
+.ornament { display:flex; align-items:center; gap:14px; margin-bottom:28px; width:100%; max-width:360px; }
+.ornament::before,.ornament::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,#c4882a,transparent); }
+.t-lore { max-width:360px; color:#c8b890; font-style:italic; font-size:0.88rem; line-height:2; margin-bottom:40px; }
+.btn-gold { font-size:0.88rem; letter-spacing:0.3em; text-transform:uppercase; color:#1a0800; background:linear-gradient(135deg,#f5d080,#e0aa55,#c4882a); border:none; padding:14px 44px; cursor:pointer; font-weight:bold; clip-path:polygon(10px 0%,calc(100% - 10px) 0%,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0% calc(100% - 10px),0% 10px); transition:all 0.3s; }
+.btn-gold:hover { transform:scale(1.04); box-shadow:0 0 30px rgba(196,136,42,0.5); }
+
+/* CHARACTER */
+#char-screen { display:none; width:100%; max-width:640px; margin:0 auto; padding:24px 16px 100px; }
+.scroll-wrap { background:linear-gradient(160deg,#1e1410 0%,#181008 100%); border:1px solid #4a3010; padding:28px 22px 32px; box-shadow:0 0 60px rgba(196,136,42,0.1),0 4px 20px rgba(0,0,0,0.7); position:relative; }
+.scroll-wrap::before,.scroll-wrap::after { content:''; position:absolute; left:0; right:0; height:3px; background:linear-gradient(90deg,transparent,#c4882a,transparent); }
+.scroll-wrap::before { top:0; } .scroll-wrap::after { bottom:0; }
+.form-title { font-size:1.3rem; color:#c4882a; text-align:center; margin-bottom:4px; font-weight:bold; }
+.form-subtitle { font-size:0.62rem; letter-spacing:0.35em; color:#6a5030; text-align:center; margin-bottom:22px; text-transform:uppercase; }
+.sec-head { font-size:0.68rem; letter-spacing:0.25em; color:#c4882a; text-transform:uppercase; margin:18px 0 10px; display:flex; align-items:center; gap:10px; }
+.sec-head::after { content:''; flex:1; height:1px; background:#3a2810; }
+.field-label { font-size:0.65rem; color:#7a5a30; letter-spacing:0.1em; margin-bottom:5px; display:block; }
+.field-input { width:100%; background:#120c06; border:1px solid #3a2810; border-bottom:2px solid #7a5030; padding:8px 10px; font-family:Georgia,'Times New Roman',serif; font-size:1rem; color:#e8d8b8; outline:none; transition:border-color 0.2s; margin-bottom:10px; }
+.field-input:focus { border-bottom-color:#c4882a; }
+.field-input::placeholder { color:#5a4020; font-style:italic; }
+.class-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:4px; }
+.class-card { border:1px solid #3a2810; padding:12px 10px; cursor:pointer; background:#150f08; transition:all 0.2s; position:relative; }
+.class-card:hover { border-color:#c4882a; background:#1e1510; }
+.class-card.selected { border-color:#8b1422; background:#1a0d0d; }
+.class-card.selected::after { content:'♛'; position:absolute; top:6px; right:8px; color:#8b1422; font-size:0.7rem; }
+.class-icon { font-size:1.1rem; margin-bottom:4px; }
+.class-name { font-size:0.8rem; font-weight:bold; color:#e8d8b8; margin-bottom:3px; }
+.class-desc { font-size:0.68rem; color:#8a7050; line-height:1.5; font-style:italic; }
+.class-bonus { margin-top:5px; font-size:0.62rem; color:#c4882a; }
+.attr-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:10px; }
+.attr-box { background:#120c06; border:1px solid #3a2810; padding:8px 4px; text-align:center; }
+.attr-code { font-size:0.6rem; letter-spacing:0.1em; color:#7a5a30; }
+.attr-zh { font-size:0.62rem; color:#6a4a20; font-style:italic; margin-bottom:4px; }
+.attr-val { font-size:1.4rem; color:#c4882a; font-weight:bold; line-height:1; }
+.attr-val.spin { animation:spinV 0.12s infinite; color:#f5d080; }
+@keyframes spinV { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.derived-row { display:flex; gap:6px; margin-top:8px; margin-bottom:4px; }
+.derived-box { flex:1; text-align:center; padding:7px 4px; border:1px solid #3a2810; background:#120c06; }
+.derived-label { font-size:0.55rem; letter-spacing:0.1em; color:#6a5030; }
+.derived-val { font-size:1.1rem; font-weight:bold; }
+.dv-hp { color:#e05060; } .dv-san { color:#5a90c0; } .dv-luc { color:#e0aa55; }
+.btn-dark { width:100%; font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; color:#c8b890; background:#120c06; border:1px solid #5a4020; padding:9px; cursor:pointer; transition:all 0.2s; }
+.btn-dark:hover { border-color:#c4882a; box-shadow:0 0 10px rgba(196,136,42,0.2); }
+.skill-pool-bar { display:flex; justify-content:space-between; align-items:center; padding:7px 12px; background:rgba(139,20,34,0.1); border:1px dashed #5a1020; margin-bottom:10px; }
+.pool-label { font-size:0.68rem; color:#7a5030; }
+.pool-val { font-size:1.4rem; color:#c4882a; font-weight:bold; }
+.skill-rows { display:flex; flex-direction:column; gap:6px; }
+.skill-row { display:flex; align-items:center; gap:8px; padding:8px 10px; background:#120c06; border:1px solid #2a1a08; }
+.sk-info { flex:1; }
+.sk-name { font-size:0.78rem; font-weight:bold; color:#e8d8b8; }
+.sk-desc { font-size:0.62rem; color:#6a5030; font-style:italic; }
+.sk-ctrl { display:flex; align-items:center; gap:5px; }
+.sk-btn { width:24px; height:24px; border:1px solid #5a4020; background:#1e1408; color:#c8b890; font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+.sk-btn:hover { background:#c4882a; color:#0a0608; border-color:#c4882a; }
+.sk-val { font-size:1.1rem; font-weight:bold; color:#c4882a; width:34px; text-align:center; }
+.sk-hint { font-size:0.58rem; color:#6a5030; white-space:nowrap; }
+.skill-note { font-size:0.6rem; color:#5a4020; text-align:right; margin-top:5px; font-style:italic; }
+.field-textarea { width:100%; min-height:70px; background:#120c06; border:1px solid #3a2810; border-bottom:2px solid #7a5030; padding:9px 10px; font-family:Georgia,'Times New Roman',serif; font-size:0.84rem; color:#e8d8b8; outline:none; resize:none; line-height:1.7; transition:border-color 0.2s; }
+.field-textarea:focus { border-bottom-color:#c4882a; }
+.field-textarea::placeholder { color:#5a4020; font-style:italic; }
+.btn-crimson { width:100%; margin-top:22px; font-size:0.95rem; letter-spacing:0.15em; color:#f0e0c0; background:linear-gradient(135deg,#b8202e,#8b1422,#5a0a12); border:2px solid #c4882a; padding:15px; cursor:pointer; transition:all 0.3s; font-weight:bold; clip-path:polygon(10px 0%,calc(100% - 10px) 0%,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0% calc(100% - 10px),0% 10px); }
+.btn-crimson:hover { background:linear-gradient(135deg,#cc2030,#b8202e,#8b1422); box-shadow:0 0 30px rgba(139,20,34,0.5); }
+
+/* GAME */
+#game-screen { display:none; width:100%; max-width:720px; margin:0 auto; padding-bottom:120px; }
+.hud { position:sticky; top:0; z-index:50; background:rgba(10,6,8,0.98); border-bottom:1px solid rgba(196,136,42,0.25); padding:9px 14px; display:flex; align-items:center; gap:10px; }
+.hud-identity { flex:1; min-width:0; }
+.hud-name { font-size:0.9rem; color:#e0aa55; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hud-role { font-size:0.65rem; color:#a07840; font-style:italic; }
+.hud-vitals { display:flex; gap:8px; }
+.vital { display:flex; flex-direction:column; align-items:center; min-width:42px; }
+.vital-lbl { font-size:0.5rem; letter-spacing:0.08em; color:#7a5030; text-transform:uppercase; }
+.vital-val { font-size:0.88rem; font-weight:bold; line-height:1.1; }
+.v-hp { color:#e05060; } .v-san { color:#5a90c0; } .v-luc { color:#e0aa55; }
+.hud-btn { background:none; border:1px solid rgba(196,136,42,0.35); color:#e0aa55; font-size:0.6rem; letter-spacing:0.08em; padding:5px 9px; cursor:pointer; transition:all 0.2s; }
+.hud-btn:hover { border-color:#c4882a; background:rgba(196,136,42,0.1); }
+#story-log { padding:16px 14px; display:flex; flex-direction:column; gap:14px; min-height:50vh; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.block-narr { background:linear-gradient(140deg,#1e1610 0%,#181008 100%); border:1px solid #3a2810; border-left:3px solid #c4882a; padding:14px 16px; box-shadow:2px 2px 10px rgba(0,0,0,0.5); animation:fadeUp 0.45s ease-out; position:relative; }
+.block-narr::after { content:'❧'; position:absolute; top:8px; right:10px; color:#c4882a; opacity:0.25; font-size:0.75rem; }
+.block-narr p { font-size:0.9rem; line-height:2; color:#ddd0b0; white-space:pre-wrap; }
+.block-narr p + p { margin-top:8px; }
+.npc-speech { margin-top:10px; border-left:3px solid #8b1422; padding:9px 12px; background:rgba(139,20,34,0.1); font-style:italic; color:#ddd0b0; }
+.npc-who { font-size:0.65rem; color:#c4882a; letter-spacing:0.1em; display:block; margin-bottom:3px; font-style:normal; }
+.block-player { align-self:flex-end; max-width:82%; background:linear-gradient(135deg,#0d1828,#0a1020); border:1px solid rgba(74,112,192,0.3); padding:11px 14px; box-shadow:0 2px 10px rgba(0,0,0,0.4); animation:fadeUp 0.35s ease-out; }
+.block-player .who { font-size:0.6rem; letter-spacing:0.12em; color:#5a90c0; margin-bottom:3px; text-transform:uppercase; }
+.block-player p { font-size:0.86rem; line-height:1.7; color:#c8d8f0; font-style:italic; }
+.block-check-prompt { border:1px solid rgba(196,136,42,0.4); background:#100a06; padding:12px 14px; animation:fadeUp 0.4s ease-out; display:flex; flex-direction:column; gap:10px; }
+.check-header { font-size:0.72rem; letter-spacing:0.15em; color:#a07840; }
+.check-skill-info { display:flex; align-items:center; gap:10px; padding:8px 10px; background:rgba(196,136,42,0.06); border:1px solid rgba(196,136,42,0.2); }
+.check-skill-name { font-size:1rem; font-weight:bold; color:#e0aa55; flex:1; }
+.check-skill-val { font-size:0.78rem; color:#8a6840; }
+.btn-roll-now { font-size:0.82rem; letter-spacing:0.18em; text-transform:uppercase; color:#1a0800; background:linear-gradient(135deg,#f5d080,#e0aa55,#c4882a); border:none; padding:10px; cursor:pointer; transition:all 0.2s; font-weight:bold; }
+.btn-roll-now:hover { transform:scale(1.02); box-shadow:0 0 16px rgba(196,136,42,0.4); }
+.block-dice { border:1px solid rgba(196,136,42,0.25); background:#0a0606; padding:11px 14px; animation:fadeUp 0.4s ease-out; }
+.dice-hd { font-size:0.68rem; letter-spacing:0.12em; color:#8a6840; margin-bottom:6px; }
+.dice-line { display:flex; align-items:baseline; gap:8px; margin-bottom:6px; }
+.dice-eq { font-size:0.78rem; color:#6a5030; }
+.dice-num { font-size:1.6rem; font-weight:bold; }
+.dice-slash { font-size:0.85rem; color:#6a5030; }
+.dice-target-val { font-size:1.2rem; font-weight:bold; color:#c8b890; }
+.badge { display:inline-block; font-size:0.78rem; letter-spacing:0.14em; padding:4px 14px; text-transform:uppercase; font-weight:bold; }
+.badge-gs { background:rgba(20,70,40,0.8); color:#60d890; border:1px solid #287848; }
+.badge-s  { background:rgba(20,40,80,0.8); color:#60a0e0; border:1px solid #2848a0; }
+.badge-f  { background:rgba(80,20,20,0.8); color:#e07070; border:1px solid #a02828; }
+.badge-gf { background:rgba(50,0,0,0.9); color:#ff4444; border:1px solid #cc0000; animation:gfP 0.9s 4; }
+@keyframes gfP { 0%,100%{box-shadow:0 0 4px rgba(255,0,0,0.3)} 50%{box-shadow:0 0 18px rgba(255,0,0,0.7)} }
+.block-magic { border:1px solid rgba(122,58,170,0.4); background:linear-gradient(135deg,#1e0a3c,#2a1050); padding:14px 16px; animation:fadeUp 0.45s ease-out; }
+.magic-title { font-size:0.7rem; letter-spacing:0.2em; color:#b080e0; text-transform:uppercase; margin-bottom:6px; }
+.magic-text { font-size:0.88rem; line-height:1.9; color:#c8b0f0; }
+.block-rune { border:1px solid rgba(176,128,224,0.5); background:linear-gradient(135deg,#280a46,#3c1458); padding:14px 16px; text-align:center; animation:runeA 2s ease-in-out infinite alternate,fadeUp 0.5s ease-out; }
+@keyframes runeA { from{box-shadow:0 0 8px rgba(176,128,224,0.2)} to{box-shadow:0 0 28px rgba(176,128,224,0.5)} }
+.rune-title { font-size:0.95rem; font-weight:bold; color:#b080e0; letter-spacing:0.12em; }
+.rune-sub { font-size:0.75rem; color:rgba(176,128,224,0.75); font-style:italic; margin-top:5px; line-height:1.7; }
+.block-relation { border-left:3px solid #8b2040; background:rgba(15,5,10,0.7); padding:8px 14px; font-size:0.72rem; letter-spacing:0.12em; display:flex; gap:16px; color:#8a6840; animation:fadeUp 0.3s ease-out; }
+.rel-rift { color:#e07070; font-weight:bold; } .rel-bond { color:#e080a0; font-weight:bold; }
+.gm-actions-area { padding:0 14px; display:none; }
+.gm-actions-label { font-size:0.62rem; letter-spacing:0.2em; color:#8a6840; text-transform:uppercase; margin-bottom:7px; }
+.action-choices { display:flex; flex-direction:column; gap:5px; margin-bottom:10px; }
+.action-btn { background:#120c06; border:1px solid rgba(196,136,42,0.25); color:#c8b890; padding:10px 13px; font-family:Georgia,'Times New Roman',serif; font-size:0.82rem; text-align:left; cursor:pointer; line-height:1.5; transition:all 0.2s; }
+.action-btn:hover { border-color:#e0aa55; background:rgba(196,136,42,0.08); color:#e8d8b8; }
+.loading-bar { display:none; align-items:center; gap:12px; padding:12px 14px; font-style:italic; font-size:0.8rem; color:#8a6840; }
+.loading-bar.on { display:flex; }
+.ld-dots span { display:inline-block; width:5px; height:5px; border-radius:50%; background:#c4882a; margin:0 2px; animation:ldD 1.2s ease-in-out infinite; }
+.ld-dots span:nth-child(2){animation-delay:0.2s} .ld-dots span:nth-child(3){animation-delay:0.4s}
+@keyframes ldD { 0%,100%{opacity:0.25;transform:scale(0.8)} 50%{opacity:1;transform:scale(1.2)} }
+.input-bar { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:720px; background:linear-gradient(180deg,transparent 0%,rgba(10,6,8,0.99) 28%); padding:18px 14px 22px; z-index:100; }
+.input-row { display:flex; gap:8px; align-items:flex-end; }
+.story-textarea { flex:1; background:#1a1008; border:1px solid #4a3010; border-bottom:2px solid #c4882a; padding:9px 12px; font-family:Georgia,'Times New Roman',serif; font-size:0.9rem; color:#e8d8b8; outline:none; min-height:42px; max-height:96px; resize:none; line-height:1.6; transition:border-color 0.2s; }
+.story-textarea:focus { border-bottom-color:#8b1422; }
+.story-textarea::placeholder { color:#5a4020; font-style:italic; opacity:0.75; }
+.btn-exec { color:#f0e0c0; background:linear-gradient(135deg,#8b1422,#4a0808); border:1px solid #c4882a; padding:9px 16px; height:42px; cursor:pointer; transition:all 0.2s; white-space:nowrap; font-size:0.78rem; letter-spacing:0.1em; font-family:Georgia,'Times New Roman',serif; }
+.btn-exec:hover { background:linear-gradient(135deg,#b8202e,#8b1422); }
+.btn-exec:disabled { opacity:0.45; cursor:not-allowed; }
+#skill-panel { display:none; position:fixed; inset:0; z-index:200; background:rgba(0,0,0,0.88); align-items:center; justify-content:center; padding:16px; }
+#skill-panel.open { display:flex; }
+.skill-panel-box { background:#1a1008; border:1px solid #4a3010; max-width:420px; width:100%; max-height:88vh; overflow-y:auto; padding:22px 20px; position:relative; box-shadow:0 0 60px rgba(196,136,42,0.2); }
+.sp-close { position:absolute; top:10px; right:12px; background:none; border:none; font-size:1.1rem; cursor:pointer; color:#7a5030; }
+.sp-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #2a1a08; }
+.sp-name { font-size:0.8rem; font-weight:bold; color:#e8d8b8; }
+.sp-info { font-size:0.68rem; color:#6a5030; font-style:italic; }
+.sp-val { font-size:1.15rem; font-weight:bold; color:#c4882a; }
+.sp-attrs { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; padding-top:12px; border-top:1px solid #2a1a08; }
+.sp-attr { flex:1; min-width:55px; text-align:center; }
+.sp-attr-lbl { font-size:0.55rem; color:#6a5030; }
+.sp-attr-val { font-size:1.1rem; font-weight:bold; color:#c4882a; }
+</style>
+</head>
+<body>
+<div id="petals"></div>
+<div id="app">
+
+<div id="title-screen">
+  <svg class="crown-svg" viewBox="0 0 120 80" fill="none">
+    <path d="M10 70 L10 40 L30 55 L60 15 L90 55 L110 40 L110 70 Z" fill="none" stroke="#c4882a" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="60" cy="15" r="5" fill="#e0aa55"/>
+    <circle cx="10" cy="40" r="4" fill="#c4882a"/>
+    <circle cx="110" cy="40" r="4" fill="#c4882a"/>
+    <rect x="8" y="68" width="104" height="6" rx="1" fill="#c4882a"/>
+    <circle cx="60" cy="48" r="7" fill="none" stroke="#e0aa55" stroke-width="1.5"/>
+    <path d="M55 48 Q60 42 65 48 Q60 54 55 48Z" fill="#e0aa55" opacity="0.7"/>
+  </svg>
+  <div class="t-en">Thorns &amp; Vows · Court Edition</div>
+  <div class="t-zh">荊棘與誓約</div>
+  <div class="t-sub">宮廷 · 魔法 · 愛恨糾葛</div>
+  <div class="ornament"><span>✦</span></div>
+  <div class="t-lore">艾索倫王宮的舞會，每一支華爾滋<br>都藏著未說出口的秘密。<br><br>誓紋是刻在皮膚上的契約——<br>違背誓言的代價，是你的心臟。</div>
+  <button class="btn-gold" id="btn-start">踏入宮廷</button>
+</div>
+
+<div id="char-screen">
+<div style="height:28px"></div>
+<div class="scroll-wrap">
+  <div class="form-title">宮廷名冊</div>
+  <div class="form-subtitle">Character Creation</div>
+  <div class="sec-head">稱謂</div>
+  <label class="field-label">你的名字</label>
+  <input class="field-input" id="c-name" type="text" placeholder="輸入你的名字……" maxlength="20">
+  <div class="sec-head">身份</div>
+  <div class="class-grid">
+    <div class="class-card" data-class="duke" onclick="pickClass(this)">
+      <div class="class-icon">🏰</div><div class="class-name">失勢公爵</div>
+      <div class="class-desc">曾是王國最顯赫的家族，一夕之間封地被奪。帶著舊日榮光與深藏的憤恨回到宮廷。</div>
+      <div class="class-bonus">魅惑+10 · 洞察+10</div>
+    </div>
+    <div class="class-card" data-class="count" onclick="pickClass(this)">
+      <div class="class-icon">🗡️</div><div class="class-name">野心伯爵</div>
+      <div class="class-desc">出身中等貴族，靠著精明與手段在宮廷中步步為營。笑容之下永遠藏著一把刀。</div>
+      <div class="class-bonus">欺瞞+10 · 魅惑+10</div>
+    </div>
+    <div class="class-card" data-class="bastard" onclick="pickClass(this)">
+      <div class="class-icon">⚔️</div><div class="class-name">王室私生子</div>
+      <div class="class-desc">血統是最大的秘密，也是最危險的武器。在宮廷邊緣遊走，等待一個翻盤的機會。</div>
+      <div class="class-bonus">武藝+10 · 體技+10</div>
+    </div>
+    <div class="class-card" data-class="envoy" onclick="pickClass(this)">
+      <div class="class-icon">🌹</div><div class="class-name">外國使節</div>
+      <div class="class-desc">以他國使節身份出席玫瑰舞宴，真實目的無人知曉。對誓紋魔法有不尋常的了解。</div>
+      <div class="class-bonus">魅惑+10 · 秘術+10</div>
+    </div>
+  </div>
+  <div class="sec-head">命格（擲骰決定）</div>
+  <div class="attr-grid">
+    <div class="attr-box"><div class="attr-code">STR</div><div class="attr-zh">體魄</div><div class="attr-val" id="av-str">—</div></div>
+    <div class="attr-box"><div class="attr-code">DEX</div><div class="attr-zh">身法</div><div class="attr-val" id="av-dex">—</div></div>
+    <div class="attr-box"><div class="attr-code">INT</div><div class="attr-zh">學識</div><div class="attr-val" id="av-int">—</div></div>
+    <div class="attr-box"><div class="attr-code">CHA</div><div class="attr-zh">魅力</div><div class="attr-val" id="av-cha">—</div></div>
+  </div>
+  <button class="btn-dark" id="btn-roll">⚄ 擲骰決定命格</button>
+  <div id="derived-wrap" style="display:none;margin-top:8px;">
+    <div class="derived-row">
+      <div class="derived-box"><div class="derived-label">HP 生命</div><div class="derived-val dv-hp" id="dv-hp">—</div></div>
+      <div class="derived-box"><div class="derived-label">SAN 心智</div><div class="derived-val dv-san" id="dv-san">—</div></div>
+      <div class="derived-box"><div class="derived-label">LUC 幸運</div><div class="derived-val dv-luc" id="dv-luc">—</div></div>
+    </div>
+  </div>
+  <div class="sec-head">技藝（分配技能點）</div>
+  <div class="skill-pool-bar"><span class="pool-label">剩餘點數</span><span class="pool-val" id="pool-val">150</span></div>
+  <div class="skill-rows" id="skill-rows"></div>
+  <div class="skill-note">初始值30 · 上限95 · 每次±5</div>
+  <div class="sec-head">過往（選填）</div>
+  <textarea class="field-textarea" id="c-bg" placeholder="你的秘密、習慣、弱點……任何設定都會進入劇情。"></textarea>
+  <button class="btn-crimson" id="btn-begin">✦ 踏入舞會廳 ✦</button>
+</div>
+<div style="height:40px"></div>
+</div>
+
+<div id="game-screen">
+  <div class="hud">
+    <div class="hud-identity"><div class="hud-name" id="hud-name">—</div><div class="hud-role" id="hud-role">—</div></div>
+    <div class="hud-vitals">
+      <div class="vital"><div class="vital-lbl">HP</div><div class="vital-val v-hp" id="hv-hp">—</div></div>
+      <div class="vital"><div class="vital-lbl">SAN</div><div class="vital-val v-san" id="hv-san">—</div></div>
+      <div class="vital"><div class="vital-lbl">LUC</div><div class="vital-val v-luc" id="hv-luc">—</div></div>
+    </div>
+    <button class="hud-btn" onclick="openSkillPanel()">技藝</button>
+  </div>
+  <div id="story-log"></div>
+  <div class="gm-actions-area" id="gm-actions-area">
+    <div class="gm-actions-label">▸ 建議行動</div>
+    <div class="action-choices" id="action-choices"></div>
+  </div>
+  <div class="loading-bar" id="loading-bar"><span>命運之輪轉動中</span><div class="ld-dots"><span></span><span></span><span></span></div></div>
+  <div class="input-bar">
+    <div class="input-row">
+      <textarea class="story-textarea" id="story-input" rows="1" placeholder="你想做什麼……" onkeydown="onKey(event)" oninput="autoH(this)"></textarea>
+      <button class="btn-exec" id="btn-exec">執行</button>
+    </div>
+  </div>
+</div>
+
+</div>
+<div id="skill-panel">
+  <div class="skill-panel-box">
+    <button class="sp-close" onclick="closeSkillPanel()">✕</button>
+    <div class="form-title" style="font-size:1.05rem;margin-bottom:14px;">技藝一覽</div>
+    <div id="sp-rows"></div>
+    <div class="sp-attrs" id="sp-attrs"></div>
+  </div>
+</div>
+
+<script>
+const SKILLS=[
+  {key:'charm',   name:'魅惑', attr:'CHA',desc:'交涉、誘導、舞會上的周旋'},
+  {key:'combat',  name:'武藝', attr:'STR',desc:'持劍格鬥、馬上作戰'},
+  {key:'stealth', name:'欺瞞', attr:'DEX',desc:'說謊、偽裝、潛行不被察覺'},
+  {key:'insight', name:'洞察', attr:'INT',desc:'讀人心、識破謊言、察覺陰謀'},
+  {key:'arcane',  name:'秘術', attr:'INT',desc:'誓紋魔法、古代知識、解讀魔法痕跡'},
+  {key:'athletics',name:'體技',attr:'STR',desc:'攀爬、追逐、翻越、不引人注目地移動'},
+];
+const CLASSES={
+  duke:   {name:'失勢公爵',   bonuses:{charm:10,insight:10}},
+  count:  {name:'野心伯爵',   bonuses:{stealth:10,charm:10}},
+  bastard:{name:'王室私生子', bonuses:{combat:10,athletics:10}},
+  envoy:  {name:'外國使節',   bonuses:{charm:10,arcane:10}},
+};
+let G={name:'',cls:'',attrs:{str:0,dex:0,int:0,cha:0},hp:0,maxHp:0,san:0,maxSan:0,luc:0,skills:{},bg:'',history:[],rift:0,bond:0,pendingCheck:null};
+let pool=150,cls='';
+
+(function(){
+  const c=document.getElementById('petals');
+  for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=['✿','❀','❁','✾'][i%4];p.style.left=Math.random()*100+'vw';p.style.setProperty('--drift',(Math.random()*80-40)+'px');p.style.animationDuration=(12+Math.random()*16)+'s';p.style.animationDelay=(Math.random()*20)+'s';c.appendChild(p);}
+})();
+
+function goChar(){document.getElementById('title-screen').style.display='none';document.getElementById('char-screen').style.display='block';buildSkillRows();}
+function pickClass(el){document.querySelectorAll('.class-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');cls=el.dataset.class;initSkills();renderSkillRows();}
+function initSkills(){pool=150;const b=cls?(CLASSES[cls]?.bonuses||{}):{};SKILLS.forEach(s=>{G.skills[s.key]=30+(b[s.key]||0);});const sp=Object.values(b).reduce((a,v)=>a+v,0);pool=150-sp;if(pool<0)pool=0;document.getElementById('pool-val').textContent=pool;}
+function buildSkillRows(){initSkills();renderSkillRows();}
+function renderSkillRows(){const el=document.getElementById('skill-rows');el.innerHTML='';SKILLS.forEach(s=>{const v=G.skills[s.key]||30;const row=document.createElement('div');row.className='skill-row';row.innerHTML=`<div class="sk-info"><div class="sk-name">${s.name}</div><div class="sk-desc">${s.attr} · ${s.desc}</div></div><div class="sk-ctrl"><button class="sk-btn" onclick="adj('${s.key}',-5)">−</button><div class="sk-val" id="sv-${s.key}">${v}</div><button class="sk-btn" onclick="adj('${s.key}',+5)">+</button></div><div class="sk-hint" id="sh-${s.key}">大成功≤${Math.floor(v/5)}</div>`;el.appendChild(row);});}
+function adj(key,d){const cur=G.skills[key],nxt=cur+d;if(nxt<30||nxt>95)return;if(d>0&&pool<5)return;G.skills[key]=nxt;pool-=d;document.getElementById('sv-'+key).textContent=nxt;document.getElementById('sh-'+key).textContent='大成功≤'+Math.floor(nxt/5);document.getElementById('pool-val').textContent=pool;}
+function rollAll(){const ids=['av-str','av-dex','av-int','av-cha'];ids.forEach(id=>document.getElementById(id).classList.add('spin'));let t=0;const iv=setInterval(()=>{ids.forEach(id=>document.getElementById(id).textContent=Math.floor(Math.random()*60+15));t++;if(t>18){clearInterval(iv);const roll=()=>[1,2,3].map(()=>Math.floor(Math.random()*6)+1).reduce((a,b)=>a+b,0)+7;G.attrs.str=roll();G.attrs.dex=roll();G.attrs.int=roll();G.attrs.cha=roll();document.getElementById('av-str').textContent=G.attrs.str;document.getElementById('av-dex').textContent=G.attrs.dex;document.getElementById('av-int').textContent=G.attrs.int;document.getElementById('av-cha').textContent=G.attrs.cha;ids.forEach(id=>document.getElementById(id).classList.remove('spin'));G.maxHp=G.hp=G.attrs.str+10;G.maxSan=G.san=G.attrs.cha*4;G.luc=Math.floor(Math.random()*60)+30;document.getElementById('dv-hp').textContent=G.hp;document.getElementById('dv-san').textContent=G.san;document.getElementById('dv-luc').textContent=G.luc;document.getElementById('derived-wrap').style.display='block';}},65);}
+function beginGame(){G.name=document.getElementById('c-name').value.trim()||'旅人';if(!cls){alert('請選擇身份');return;}if(!G.attrs.str){alert('請先擲骰決定命格');return;}G.cls=cls;G.bg=document.getElementById('c-bg').value.trim();document.getElementById('char-screen').style.display='none';document.getElementById('game-screen').style.display='block';updateHUD();startStory();}
+function updateHUD(){document.getElementById('hud-name').textContent=G.name;document.getElementById('hud-role').textContent=CLASSES[G.cls]?.name||'';document.getElementById('hv-hp').textContent=G.hp+'/'+G.maxHp;document.getElementById('hv-san').textContent=G.san+'/'+G.maxSan;document.getElementById('hv-luc').textContent=G.luc;}
+function openSkillPanel(){const rows=document.getElementById('sp-rows');rows.innerHTML='';SKILLS.forEach(s=>{const r=document.createElement('div');r.className='sp-row';r.innerHTML='<div><div class="sp-name">'+s.name+'</div><div class="sp-info">'+s.attr+' · '+s.desc+'</div></div><div class="sp-val">'+G.skills[s.key]+'</div>';rows.appendChild(r);});document.getElementById('sp-attrs').innerHTML='<div class="sp-attr"><div class="sp-attr-lbl">STR</div><div class="sp-attr-val">'+G.attrs.str+'</div></div><div class="sp-attr"><div class="sp-attr-lbl">DEX</div><div class="sp-attr-val">'+G.attrs.dex+'</div></div><div class="sp-attr"><div class="sp-attr-lbl">INT</div><div class="sp-attr-val">'+G.attrs.int+'</div></div><div class="sp-attr"><div class="sp-attr-lbl">CHA</div><div class="sp-attr-val">'+G.attrs.cha+'</div></div>';document.getElementById('skill-panel').classList.add('open');}
+function closeSkillPanel(){document.getElementById('skill-panel').classList.remove('open');}
+function d100(){return Math.floor(Math.random()*100)+1;}
+function d6(){return Math.floor(Math.random()*6)+1;}
+function performCheck(skillKey){const sk=SKILLS.find(s=>s.key===skillKey);const target=G.skills[skillKey];const roll=d100();let outcome,badge,success,great;if(roll<=Math.floor(target/5)){outcome='大成功';badge='badge-gs';success=true;great=true;}else if(roll<=target){outcome='成功';badge='badge-s';success=true;great=false;}else if(roll>95||roll%11===0){outcome='大失敗';badge='badge-gf';success=false;great=false;G.san=Math.max(0,G.san-d6());updateHUD();}else{outcome='失敗';badge='badge-f';success=false;great=false;}const color=great?'#60d890':success?'#60a0e0':'#e07070';addDiceBlock({name:sk?.name||skillKey,roll,target,outcome,badge,color});return{success,great,outcome,skillName:sk?.name||skillKey,roll,target};}
+function logEl(){return document.getElementById('story-log');}
+function addNarr(text){let html=text.replace(/【([^】]+)說】([^【]*)/g,(_,who,speech)=>'<div class="npc-speech"><span class="npc-who">'+who+'</span>'+speech.trim()+'</div>');const parts=html.split('\n').filter(l=>l.trim());let final='';for(const p of parts){if(p.includes('class="npc-speech"'))final+=p;else if(p.trim())final+='<p>'+p+'</p>';}const div=document.createElement('div');div.className='block-narr';div.innerHTML=final||'<p>'+text+'</p>';logEl().appendChild(div);scrollBot();}
+function addPlayer(text){const div=document.createElement('div');div.className='block-player';div.innerHTML='<div class="who">'+G.name+'</div><p>'+text+'</p>';logEl().appendChild(div);scrollBot();}
+function addDiceBlock({name,roll,target,outcome,badge,color}){const div=document.createElement('div');div.className='block-dice';div.innerHTML='<div class="dice-hd">【'+G.name+' · '+name+'檢定】</div><div class="dice-line"><span class="dice-eq">d100 =</span><span class="dice-num" style="color:'+color+'">'+roll+'</span><span class="dice-slash">/</span><span class="dice-target-val">'+target+'</span></div><span class="badge '+badge+'">'+outcome+'</span>';logEl().appendChild(div);scrollBot();}
+function addCheckPrompt(skillKey){const sk=SKILLS.find(s=>s.key===skillKey);if(!sk)return;const target=G.skills[skillKey];const div=document.createElement('div');div.className='block-check-prompt';div.id='check-prompt';div.innerHTML='<div class="check-header">【GM 要求判定】</div><div class="check-skill-info"><span class="check-skill-name">'+sk.name+'</span><span class="check-skill-val">技能值 '+target+'　大成功≤'+Math.floor(target/5)+'</span></div><button class="btn-roll-now" onclick="doCheck(\''+skillKey+'\')">⚄ 擲骰！（d100 ≤ '+target+' 成功）</button>';logEl().appendChild(div);G.pendingCheck={skillKey,skillName:sk.name,target};scrollBot();}
+function addOath(text){const div=document.createElement('div');div.className='block-rune';div.innerHTML='<div class="rune-title">✦ 誓紋反應 ✦</div><div class="rune-sub">'+text+'</div>';logEl().appendChild(div);scrollBot();}
+function addMagic(text){const div=document.createElement('div');div.className='block-magic';div.innerHTML='<div class="magic-title">✨ 魔法顯現</div><div class="magic-text">'+text+'</div>';logEl().appendChild(div);scrollBot();}
+function addRelation(rift,bond){if(!rift&&!bond)return;const div=document.createElement('div');div.className='block-relation';if(rift)div.innerHTML+='<span class="rel-rift">裂痕 +'+rift+'</span>';if(bond)div.innerHTML+='<span class="rel-bond">羈絆 +'+bond+'</span>';logEl().appendChild(div);}
+function showActions(arr){const area=document.getElementById('gm-actions-area');const choices=document.getElementById('action-choices');choices.innerHTML='';arr.forEach(txt=>{const btn=document.createElement('button');btn.className='action-btn';btn.textContent=txt;btn.onclick=()=>{if(txt.startsWith('【重試】')){hideActions();callGM('（請繼續剛才的劇情）',null,true);return;}document.getElementById('story-input').value=txt.replace(/（.+?判定）/g,'').trim();hideActions();};choices.appendChild(btn);});area.style.display='block';scrollBot();}
+function hideActions(){document.getElementById('gm-actions-area').style.display='none';document.getElementById('action-choices').innerHTML='';}
+function setLoad(on){document.getElementById('loading-bar').classList.toggle('on',on);document.getElementById('btn-exec').disabled=on;}
+function scrollBot(){const log=document.getElementById('story-log');if(log){const last=log.lastElementChild;if(last)setTimeout(()=>last.scrollIntoView({behavior:'smooth',block:'end'}),80);}}
+async function doCheck(skillKey){const prompt=document.getElementById('check-prompt');if(prompt)prompt.remove();hideActions();G.pendingCheck=null;const result=performCheck(skillKey);await callGM('',result);}
+const clsNames={duke:'失勢公爵',count:'野心伯爵',bastard:'王室私生子',envoy:'外國使節'};
+function sysPrompt(){return `你是《荊棘與誓約》宮廷篇 TRPG 的GM。請嚴格遵守以下所有規則。
+
+【世界觀】
+艾索倫王國——精緻腐敗、歌舞昇平中暗藏殺機的中世紀宮廷。每年「玫瑰舞宴」是貴族權鬥主戰場。
+三大勢力：獅旗王室、聖光教廷、北境諸侯。魔法「誓紋」——刻在皮膚上的契約魔法，違背時如灼火，教廷視為異端。
+宮廷有秘密通道、偷聽牆、下毒、政治聯姻、情報交換等元素。
+
+【主角資料】
+姓名：${G.name}　身份：${clsNames[G.cls]}
+屬性：體魄${G.attrs.str} 身法${G.attrs.dex} 學識${G.attrs.int} 魅力${G.attrs.cha}
+HP：${G.hp}/${G.maxHp}　SAN：${G.san}/${G.maxSan}　LUC：${G.luc}
+技能：${SKILLS.map(s=>s.name+G.skills[s.key]).join(' ')}
+裂痕值：${G.rift}　羈絆值：${G.bond}
+背景：${G.bg||'（未設定）'}
+
+【回應格式——必須嚴格遵守】
+
+▌正常劇情：用繁體中文寫200-350字敘事，有場景感、氣味、聲音。NPC對話格式：【NPC名說】對話內容
+
+▌需要技能判定時：寫完場景，最後一行只寫「需要【技能名】判定」，然後停止。不要解釋目標值、不要預測成敗。
+
+▌收到骰子結果後：根據成敗繼續劇情，末尾給3個行動選項。
+
+▌每段劇情末尾給3個行動（除非剛要求判定）：
+行動1：（行動描述）
+行動2：（行動描述）需要【技能名】判定
+行動3：（行動描述）
+
+▌特殊標籤：魔法用【魔法】描述【/魔法】，誓紋用【誓紋反應】描述【/誓紋反應】，關係變動用【裂痕+數字】或【羈絆+數字】
+
+▌絕對禁止：
+× 禁止在旁白解釋骰子目標值
+× 禁止在收到骰子前自決成敗
+× 禁止把行動選項混進旁白段落`;}
+
+async function callGM(userMsg,diceResult=null,isRetry=false){setLoad(true);hideActions();let content='';if(userMsg)content=userMsg;if(diceResult)content+=(content?'\n\n':'')+'【骰子結果】'+diceResult.skillName+'判定：擲出'+diceResult.roll+'，目標值'+diceResult.target+'，'+diceResult.outcome+'。請繼續劇情。';G.history.push({role:'user',content:content.trim()||'（繼續）'});
+const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),30000);
+try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},signal:controller.signal,body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,system:sysPrompt(),messages:G.history})});clearTimeout(timer);if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'HTTP '+res.status);}const data=await res.json();const text=data.content?.map(c=>c.text||'').join('')||'';if(!text)throw new Error('empty');G.history.push({role:'assistant',content:text});processResponse(text);}catch(e){clearTimeout(timer);G.history.pop();if(isRetry){addNarr('（網路連線異常，請下載檔案後用瀏覽器開啟以獲得最佳體驗。）');setLoad(false);return;}addNarr('（命運的指引在此刻模糊了，可重試或繼續行動。）');setTimeout(()=>showActions(['【重試】重新呼叫命運','繼續等待，觀察四周情況','退後一步，重新評估局勢']),300);}finally{setLoad(false);}}
+
+function processResponse(raw){const actions=[];raw.replace(/^行動\d+[：:]\s*(.+)$/mg,(_,a)=>actions.push(a.trim()));const magics=[];raw.replace(/【魔法】([\s\S]+?)【\/魔法】/g,(_,m)=>magics.push(m.trim()));const runes=[];raw.replace(/【誓紋反應】([\s\S]+?)【\/誓紋反應】/g,(_,r)=>runes.push(r.trim()));let rift=0,bond=0;raw.replace(/【裂痕\+(\d+)】/g,(_,n)=>{rift+=parseInt(n);});raw.replace(/【羈絆\+(\d+)】/g,(_,n)=>{bond+=parseInt(n);});G.rift+=rift;G.bond+=bond;const checkMatch=raw.match(/需要【([^】]{1,6})】判定/);let main=raw.replace(/【魔法】[\s\S]+?【\/魔法】/g,'').replace(/【誓紋反應】[\s\S]+?【\/誓紋反應】/g,'').replace(/【裂痕\+\d+】/g,'').replace(/【羈絆\+\d+】/g,'').replace(/^行動\d+[：:].*$/mg,'').replace(/需要【[^】]+】判定[^\n]*/g,'').replace(/[*＊]{1,2}([^*＊\n]+)[*＊]{1,2}/g,'$1').replace(/#+\s/g,'').replace(/---+/g,'').replace(/\n{3,}/g,'\n\n').trim();if(main)addNarr(main);magics.forEach(m=>addMagic(m));runes.forEach(r=>addOath(r));if(rift||bond){addRelation(rift,bond);updateHUD();}if(checkMatch){const sn=checkMatch[1].trim();const sk=SKILLS.find(s=>s.name===sn||sn.includes(s.name)||s.name.includes(sn));if(sk){setTimeout(()=>addCheckPrompt(sk.key),300);return;}}if(actions.length)setTimeout(()=>showActions(actions),200);scrollBot();}
+
+function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
+function autoH(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,96)+'px';}
+async function send(){const el=document.getElementById('story-input');const txt=el.value.trim();if(!txt)return;el.value='';autoH(el);addPlayer(txt);await callGM(txt);}
+async function startStory(){const opening='請開始故事。場景設定在艾索倫王宮的年度「玫瑰舞宴」剛剛開始的夜晚。\n玩家角色：'+G.name+'，身份：'+clsNames[G.cls]+'。\n背景：'+(G.bg||'（未設定）')+'\n請描述玩家踏入舞廳的那一刻，並在適當時機引入關鍵NPC——那個將會與玩家有對立與羈絆的人。';await callGM(opening);}
+
+// iOS Safari 相容事件綁定
+document.addEventListener('DOMContentLoaded',function(){
+  var bs=document.getElementById('btn-start');
+  if(bs)bs.addEventListener('click',goChar);
+  var br=document.getElementById('btn-roll');
+  if(br)br.addEventListener('click',rollAll);
+  var bb=document.getElementById('btn-begin');
+  if(bb)bb.addEventListener('click',beginGame);
+  var be=document.getElementById('btn-exec');
+  if(be)be.addEventListener('click',send);
+  var si=document.getElementById('story-input');
+  if(si){si.addEventListener('keydown',onKey);si.addEventListener('input',function(){autoH(this);});}
+});
+</script>
+</body>
+</html>
